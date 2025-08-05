@@ -64,7 +64,7 @@ function createConsoleElement(consoleName) {
         </div>
         
         <div class="available-people">
-            <strong>${availablePeople.length}</strong> personas disponibles
+            <strong id="available-${consoleName}">${availablePeople.length}</strong> personas disponibles
         </div>
     `;
     
@@ -80,17 +80,25 @@ function createConsoleElement(consoleName) {
  * @param {string} consoleName - Nombre de la consola
  */
 function increaseCounter(consoleName) {
-    const availablePeople = getPeopleForConsole(consoleName);
-    const maxCount = availablePeople.length;
+    const totalPeople = getAllPeople().length;
+    const currentAssigned = Object.values(consoleCounters).reduce((sum, count) => sum + count, 0);
     
-    if (consoleCounters[consoleName] < maxCount) {
+    if (currentAssigned >= totalPeople) {
+        showError(`❌ Ya has asignado todas las ${totalPeople} personas disponibles.`);
+        return;
+    }
+    
+    const availablePeople = getAvailablePeopleForConsole(consoleName);
+    
+    if (consoleCounters[consoleName] < availablePeople.length) {
         consoleCounters[consoleName]++;
         updateCounterDisplay(consoleName);
+        updateAllAvailableCounts();
         updateTotalConsoles();
         hideResults();
         hideError();
     } else {
-        showError(`❌ Solo hay ${maxCount} personas disponibles para ${consoleName}`);
+        showError(`❌ Solo hay ${availablePeople.length} personas disponibles para ${consoleName} en este momento.`);
     }
 }
 
@@ -102,10 +110,44 @@ function decreaseCounter(consoleName) {
     if (consoleCounters[consoleName] > 0) {
         consoleCounters[consoleName]--;
         updateCounterDisplay(consoleName);
+        updateAllAvailableCounts();
         updateTotalConsoles();
         hideResults();
         hideError();
     }
+}
+
+/**
+ * Obtiene las personas disponibles para una consola considerando las ya asignadas
+ * @param {string} consoleName - Nombre de la consola
+ * @returns {Array} Personas disponibles
+ */
+function getAvailablePeopleForConsole(consoleName) {
+    const allPeopleForConsole = getPeopleForConsole(consoleName);
+    const currentAssigned = Object.values(consoleCounters).reduce((sum, count) => sum + count, 0);
+    const totalPeople = getAllPeople().length;
+    const remainingPeople = totalPeople - currentAssigned;
+    
+    return allPeopleForConsole.slice(0, Math.min(allPeopleForConsole.length, remainingPeople + consoleCounters[consoleName]));
+}
+
+/**
+ * Actualiza el conteo de personas disponibles para todas las consolas
+ */
+function updateAllAvailableCounts() {
+    const consoles = getAvailableConsoles();
+    const currentAssigned = Object.values(consoleCounters).reduce((sum, count) => sum + count, 0);
+    const totalPeople = getAllPeople().length;
+    
+    consoles.forEach(consoleName => {
+        const availableElement = document.getElementById(`available-${consoleName}`);
+        if (availableElement) {
+            const allPeopleForConsole = getPeopleForConsole(consoleName);
+            const remainingPeople = totalPeople - currentAssigned + consoleCounters[consoleName];
+            const availableCount = Math.min(allPeopleForConsole.length, remainingPeople);
+            availableElement.textContent = Math.max(0, availableCount);
+        }
+    });
 }
 
 /**
@@ -227,6 +269,7 @@ function displayResults(assignments) {
     // Obtener consolas en orden de prioridad
     const consoleOrder = getAvailableConsoles();
     
+    // Crear grupos por consola
     consoleOrder.forEach(consoleName => {
         if (assignments[consoleName] && assignments[consoleName].length > 0) {
             const consoleGroup = createConsoleGroupElement(consoleName, assignments[consoleName]);
@@ -234,9 +277,96 @@ function displayResults(assignments) {
         }
     });
     
+    // Agregar sección de Backup
+    const backupPeople = getBackupPeople(assignments);
+    if (backupPeople.length > 0) {
+        const backupGroup = createBackupGroupElement(backupPeople);
+        resultsContainer.appendChild(backupGroup);
+    }
+    
     // Mostrar la sección de resultados
     resultsSection.classList.add('visible');
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/**
+ * Obtiene las personas que no fueron asignadas (Backup)
+ * @param {Object} assignments - Asignaciones por consola
+ * @returns {Array} Personas no asignadas
+ */
+function getBackupPeople(assignments) {
+    const allPeople = getAllPeople();
+    const assignedPeople = new Set();
+    
+    // Recopilar todas las personas asignadas
+    Object.values(assignments).forEach(consoleAssignments => {
+        consoleAssignments.forEach(assignment => {
+            assignedPeople.add(assignment.person);
+        });
+    });
+    
+    // Encontrar personas no asignadas
+    return allPeople.filter(person => !assignedPeople.has(person));
+}
+
+/**
+ * Crea el elemento de grupo de Backup
+ * @param {Array} backupPeople - Personas no asignadas
+ * @returns {HTMLElement} Elemento del grupo de backup
+ */
+function createBackupGroupElement(backupPeople) {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'console-group backup-group';
+    groupDiv.style.borderLeftColor = '#f39c12';
+    
+    // Header del grupo
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'console-group-header';
+    headerDiv.style.color = '#f39c12';
+    headerDiv.innerHTML = `
+        <span>📋</span>
+        <span>Backup - Personas no asignadas (${backupPeople.length})</span>
+    `;
+    
+    // Contenedor de personas backup
+    const backupDiv = document.createElement('div');
+    backupDiv.className = 'backup-people';
+    
+    // Mostrar qué consolas pueden usar las personas de backup
+    backupPeople.forEach((person, index) => {
+        const personElement = createBackupPersonElement(person, index + 1);
+        backupDiv.appendChild(personElement);
+    });
+    
+    groupDiv.appendChild(headerDiv);
+    groupDiv.appendChild(backupDiv);
+    
+    return groupDiv;
+}
+
+/**
+ * Crea un elemento para una persona en backup
+ * @param {string} person - Nombre de la persona
+ * @param {number} index - Índice en la lista
+ * @returns {HTMLElement} Elemento de persona backup
+ */
+function createBackupPersonElement(person, index) {
+    const div = document.createElement('div');
+    div.className = 'backup-person-item';
+    
+    const consoles = getConsolesForPerson(person);
+    const consoleIcons = consoles.map(consoleName => {
+        const config = getConsoleConfig(consoleName);
+        return config.emoji;
+    }).join(' ');
+    
+    div.innerHTML = `
+        <span class="backup-number">#${index}</span>
+        <span class="backup-name">${person}</span>
+        <span class="backup-consoles">${consoleIcons}</span>
+    `;
+    
+    return div;
 }
 
 /**

@@ -244,6 +244,57 @@ h2 {
     font-size: 0.9rem;
 }
 
+/* ==========================================================================
+   SECCIÓN DE BACKUP
+   ========================================================================== */
+
+.backup-group {
+    background: linear-gradient(135deg, #fff9e6 0%, #fef5e7 100%);
+    border-left-color: #f39c12 !important;
+}
+
+.backup-people {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.backup-person-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid #f39c12;
+    transition: transform 0.2s ease;
+}
+
+.backup-person-item:hover {
+    transform: translateX(5px);
+}
+
+.backup-number {
+    background: #f39c12;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+    margin-right: 1rem;
+    font-size: 0.8rem;
+}
+
+.backup-name {
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.backup-consoles {
+    font-size: 1.2rem;
+    margin-left: 1rem;
+}
+
 textarea {
     width: 100%;
     min-height: 200px;
