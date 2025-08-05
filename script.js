@@ -128,23 +128,28 @@ function increaseCounter(consoleName) {
     const totalPeople = getAllPeople().length;
     const currentAssigned = Object.values(consoleCounters).reduce((sum, count) => sum + count, 0);
     
+    // VERIFICACIÓN 1: Límite global de personas (no más de 23 personas en total)
     if (currentAssigned >= totalPeople) {
         showError(`❌ Ya has asignado todas las ${totalPeople} personas disponibles.`);
         return;
     }
     
-    const availablePeople = getAvailablePeopleForConsole(consoleName);
+    // VERIFICACIÓN 2: Límite específico por consola (personas que pueden usar esta consola)
+    const peopleForThisConsole = getPeopleForConsole(consoleName);
+    const maxForThisConsole = peopleForThisConsole.length;
     
-    if (consoleCounters[consoleName] < availablePeople.length) {
-        consoleCounters[consoleName]++;
-        updateCounterDisplay(consoleName);
-        updateAllAvailableCounts();
-        updateTotalConsoles();
-        hideResults();
-        hideError();
-    } else {
-        showError(`❌ Solo hay ${availablePeople.length} personas disponibles para ${consoleName} en este momento.`);
+    if (consoleCounters[consoleName] >= maxForThisConsole) {
+        showError(`❌ Solo hay ${maxForThisConsole} personas que pueden usar ${consoleName}.`);
+        return;
     }
+    
+    // Si pasa ambas verificaciones, incrementar
+    consoleCounters[consoleName]++;
+    updateCounterDisplay(consoleName);
+    updateAllAvailableCounts();
+    updateTotalConsoles();
+    hideResults();
+    hideError();
 }
 
 /**
@@ -163,34 +168,26 @@ function decreaseCounter(consoleName) {
 }
 
 /**
- * Obtiene las personas disponibles para una consola considerando las ya asignadas
- * @param {string} consoleName - Nombre de la consola
- * @returns {Array} Personas disponibles
- */
-function getAvailablePeopleForConsole(consoleName) {
-    const allPeopleForConsole = getPeopleForConsole(consoleName);
-    const currentAssigned = Object.values(consoleCounters).reduce((sum, count) => sum + count, 0);
-    const totalPeople = getAllPeople().length;
-    const remainingPeople = totalPeople - currentAssigned;
-    
-    return allPeopleForConsole.slice(0, Math.min(allPeopleForConsole.length, remainingPeople + consoleCounters[consoleName]));
-}
-
-/**
  * Actualiza el conteo de personas disponibles para todas las consolas
  */
 function updateAllAvailableCounts() {
     const consoles = getAvailableConsoles();
     const currentAssigned = Object.values(consoleCounters).reduce((sum, count) => sum + count, 0);
     const totalPeople = getAllPeople().length;
+    const remainingGlobalPeople = totalPeople - currentAssigned;
     
     consoles.forEach(consoleName => {
         const availableElement = document.getElementById(`available-${consoleName}`);
         if (availableElement) {
+            // Límite por consola específica
             const allPeopleForConsole = getPeopleForConsole(consoleName);
-            const remainingPeople = totalPeople - currentAssigned + consoleCounters[consoleName];
-            const availableCount = Math.min(allPeopleForConsole.length, remainingPeople);
-            availableElement.textContent = Math.max(0, availableCount);
+            const assignedToThisConsole = consoleCounters[consoleName] || 0;
+            const remainingForThisConsole = allPeopleForConsole.length - assignedToThisConsole;
+            
+            // El mínimo entre: límite global restante y límite específico de la consola
+            const actualAvailable = Math.min(remainingGlobalPeople, remainingForThisConsole);
+            
+            availableElement.textContent = Math.max(0, actualAvailable);
         }
     });
 }
