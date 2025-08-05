@@ -239,6 +239,25 @@ function randomizeAssignments() {
 }
 
 /**
+ * Obtiene el orden inteligente para asignaciones: consolas limitadas primero
+ * @returns {Array} Consolas ordenadas por prioridad de asignación
+ */
+function getSmartAssignmentOrder() {
+    const allConsoles = getAvailableConsoles();
+    
+    // Separar consolas por cantidad de personas que las pueden usar
+    const consolesByPeople = allConsoles.map(consoleName => ({
+        name: consoleName,
+        peopleCount: getPeopleForConsole(consoleName).length
+    }));
+    
+    // Ordenar: menos personas disponibles = mayor prioridad
+    consolesByPeople.sort((a, b) => a.peopleCount - b.peopleCount);
+    
+    return consolesByPeople.map(console => console.name);
+}
+
+/**
  * Crea asignaciones inteligentes respetando las restricciones de cada persona
  * @returns {Object} Objeto con asignaciones organizadas por consola
  */
@@ -246,8 +265,8 @@ function createSmartAssignments() {
     const assignments = {};
     const usedPeople = new Set();
     
-    // Obtener todas las consolas en orden de prioridad
-    const consoleOrder = getAvailableConsoles();
+    // Orden de prioridad inteligente: consolas limitadas primero, luego globales
+    const consoleOrder = getSmartAssignmentOrder();
     
     // Procesar cada consola en orden de prioridad
     for (const consoleName of consoleOrder) {
