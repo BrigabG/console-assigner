@@ -1,8 +1,57 @@
-// ==========================================================================
-// CONFIGURACIÓN DE CONSOLE ASSIGNER
-// ==========================================================================
+// Configuración de personas y las platafoconst CONSOLES// Configuración de consolas disponibles
+const CONSOLES_CONFIG = {
+    "PC": {
+        emoji: "💻",
+        name: "PC",
+        color: "#6c5ce7"
+    },
+    "PS4": {
+        emoji: "🔵",
+        name: "PlayStation 4",
+        color: "#0984e3"
+    },
+    "PS5": {
+        emoji: "🟦",
+        name: "PlayStation 5",
+        color: "#74b9ff"
+    },
+    "Xbox": {
+        emoji: "🟢",
+        name: "Xbox",
+        color: "#00b894"
+    },
+    "Switch": {
+        emoji: "🔴",
+        name: "Nintendo Switch",
+        color: "#e17055"
+    },
+    "iOS": {
+        emoji: "📱",
+        name: "iPhone/iPad",
+        color: "#636e72"
+    },
+    "Android": {
+        emoji: "🤖",
+        name: "Android",
+        color: "#55a3ff"
+    }
+};"PC": {
+        emoji: "💻",
+        name: "PC",
+        color: "#6c5ce7"
+    },
+    "PS4": {
+        emoji: "🔵",
+        name: "PlayStation 4",
+        color: "#0984e3"
+    },
+    "PS5": {
+        emoji: "🟦",
+        name: "PlayStation 5",
+        color: "#74b9ff"
+    },usar
+// Cada persona tiene un array con las plataformas/consolas disponibles para ella
 
-// Configuración de personas y las plataformas que pueden usar
 const PEOPLE_CONFIG = {
     // PS5 - Solo estas personas pueden usar PS5 (+ iOS/Android + PC)
     "Ignacio Pourteau 🌪️": ["PC", "PS5", "Switch", "iOS", "Android"],
@@ -44,17 +93,17 @@ const CONSOLE_ORDER = ["PC", "PS4", "PS5", "Xbox", "Switch", "iOS", "Android"];
 // Configuración de consolas disponibles
 const CONSOLES_CONFIG = {
     "PC": {
-        emoji: "💻",
+        emoji: "�",
         name: "PC",
         color: "#6c5ce7"
     },
     "PS4": {
-        emoji: "🔵",
+        emoji: "�",
         name: "PlayStation 4",
         color: "#0984e3"
     },
     "PS5": {
-        emoji: "🟦",
+        emoji: "�",
         name: "PlayStation 5",
         color: "#74b9ff"
     },
@@ -110,11 +159,6 @@ function getConsoleConfig(consoleName) {
         color: "#636e72"
     };
 }
-
-// Log para debug
-console.log('📁 people-config.js cargado correctamente');
-console.log('👥 Personas configuradas:', Object.keys(PEOPLE_CONFIG).length);
-console.log('🎮 Consolas disponibles:', CONSOLE_ORDER.length);
 
 // Exportar para uso en otros archivos
 if (typeof module !== 'undefined' && module.exports) {
