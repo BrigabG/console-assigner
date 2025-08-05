@@ -15,6 +15,51 @@ const totalConsolesSpan = document.getElementById('totalConsoles');
 let consoleCounters = {};
 
 // ==========================================================================
+// FUNCIONES DE CONFIGURACIÓN
+// ==========================================================================
+
+/**
+ * Obtiene todas las personas disponibles
+ */
+function getAllPeople() {
+    return Object.keys(PEOPLE_CONFIG);
+}
+
+/**
+ * Obtiene las consolas que puede usar una persona
+ */
+function getConsolesForPerson(person) {
+    return PEOPLE_CONFIG[person] || [];
+}
+
+/**
+ * Obtiene las personas que pueden usar una consola específica
+ */
+function getPeopleForConsole(consoleName) {
+    return Object.keys(PEOPLE_CONFIG).filter(person => 
+        PEOPLE_CONFIG[person].includes(consoleName)
+    );
+}
+
+/**
+ * Obtiene todas las consolas disponibles en orden
+ */
+function getAvailableConsoles() {
+    return CONSOLE_ORDER;
+}
+
+/**
+ * Obtiene configuración de una consola
+ */
+function getConsoleConfig(consoleName) {
+    return CONSOLES_CONFIG[consoleName] || {
+        emoji: "🎮",
+        name: consoleName,
+        color: "#636e72"
+    };
+}
+
+// ==========================================================================
 // FUNCIONES DE INICIALIZACIÓN
 // ==========================================================================
 
@@ -264,6 +309,7 @@ function shuffleArray(array) {
  * @param {Object} assignments - Asignaciones organizadas por consola
  */
 function displayResults(assignments) {
+    console.log('🏆 Mostrando resultados:', assignments);
     resultsContainer.innerHTML = '';
     
     // Obtener consolas en orden de prioridad
@@ -279,10 +325,12 @@ function displayResults(assignments) {
     
     // Agregar sección de Backup
     const backupPeople = getBackupPeople(assignments);
-    if (backupPeople.length > 0) {
-        const backupGroup = createBackupGroupElement(backupPeople);
-        resultsContainer.appendChild(backupGroup);
-    }
+    console.log('📋 Personas de backup encontradas:', backupPeople.length, 'personas');
+    
+    // Siempre mostrar la sección de backup
+    const backupGroup = createBackupGroupElement(backupPeople);
+    resultsContainer.appendChild(backupGroup);
+    console.log('✅ Sección de backup agregada');
     
     // Mostrar la sección de resultados
     resultsSection.classList.add('visible');
@@ -298,6 +346,8 @@ function getBackupPeople(assignments) {
     const allPeople = getAllPeople();
     const assignedPeople = new Set();
     
+    console.log('👥 Total de personas:', allPeople.length);
+    
     // Recopilar todas las personas asignadas
     Object.values(assignments).forEach(consoleAssignments => {
         consoleAssignments.forEach(assignment => {
@@ -305,8 +355,13 @@ function getBackupPeople(assignments) {
         });
     });
     
+    console.log('👤 Personas asignadas:', Array.from(assignedPeople));
+    
     // Encontrar personas no asignadas
-    return allPeople.filter(person => !assignedPeople.has(person));
+    const backup = allPeople.filter(person => !assignedPeople.has(person));
+    console.log('📋 Calculando backup:', backup);
+    
+    return backup;
 }
 
 /**
@@ -333,10 +388,27 @@ function createBackupGroupElement(backupPeople) {
     backupDiv.className = 'backup-people';
     
     // Mostrar qué consolas pueden usar las personas de backup
-    backupPeople.forEach((person, index) => {
-        const personElement = createBackupPersonElement(person, index + 1);
-        backupDiv.appendChild(personElement);
-    });
+    if (backupPeople.length > 0) {
+        backupPeople.forEach((person, index) => {
+            const personElement = createBackupPersonElement(person, index + 1);
+            backupDiv.appendChild(personElement);
+        });
+    } else {
+        // Si no hay personas de backup, mostrar mensaje más prominente
+        const noBackupDiv = document.createElement('div');
+        noBackupDiv.className = 'backup-person-item';
+        noBackupDiv.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+        noBackupDiv.style.color = 'white';
+        noBackupDiv.style.fontWeight = '600';
+        noBackupDiv.style.textAlign = 'center';
+        noBackupDiv.style.borderLeft = '3px solid #27ae60';
+        noBackupDiv.innerHTML = `
+            <span style="width: 100%; text-align: center; font-size: 1.1rem;">
+                🎉 ¡Todas las personas han sido asignadas!
+            </span>
+        `;
+        backupDiv.appendChild(noBackupDiv);
+    }
     
     groupDiv.appendChild(headerDiv);
     groupDiv.appendChild(backupDiv);
@@ -520,8 +592,34 @@ function showTemporaryMessage(message) {
  * Configurar los event listeners cuando el DOM esté cargado
  */
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎮 Console Assigner - Inicializando...');
+    
+    // Verificar que las configuraciones están disponibles
+    if (typeof PEOPLE_CONFIG === 'undefined') {
+        console.error('❌ PEOPLE_CONFIG no está definido. Verifica que people-config.js se carga correctamente.');
+        showError('❌ Error: No se pudo cargar la configuración de personas.');
+        return;
+    }
+    
+    if (typeof CONSOLE_ORDER === 'undefined') {
+        console.error('❌ CONSOLE_ORDER no está definido.');
+        showError('❌ Error: No se pudo cargar la configuración de consolas.');
+        return;
+    }
+    
+    console.log('✅ Configuraciones cargadas correctamente');
+    console.log('📋 Personas configuradas:', Object.keys(PEOPLE_CONFIG).length);
+    console.log('🎮 Consolas disponibles:', CONSOLE_ORDER);
+    
     // Inicializar la interfaz de consolas
-    initializeConsoles();
+    try {
+        initializeConsoles();
+        console.log('✅ Interfaz de consolas inicializada');
+    } catch (error) {
+        console.error('❌ Error al inicializar consolas:', error);
+        showError('❌ Error al inicializar la interfaz de consolas: ' + error.message);
+        return;
+    }
     
     // Event listener para el botón de randomizar
     randomizeBtn.addEventListener('click', randomizeAssignments);
