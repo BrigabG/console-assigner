@@ -12,41 +12,22 @@
         <!-- Encabezado -->
         <header>
             <h1>🎮 Console Assigner</h1>
-            <p>Asigna personas a consolas de forma aleatoria para tu playtest</p>
+            <p>Asigna personas a consolas respetando las plataformas disponibles para cada participante</p>
         </header>
 
         <!-- Contenido principal -->
         <main>
-            <!-- Sección de lista de personas -->
-            <section class="input-section">
-                <h2>📝 Lista de Personas</h2>
-                
-                <!-- Selector de plataforma -->
-                <div class="platform-selector">
-                    <label for="platformSelect">Seleccionar plataforma:</label>
-                    <select id="platformSelect">
-                        <option value="">🎮 Todas las plataformas</option>
-                    </select>
-                    <button id="loadPlatformBtn" class="load-platform-btn">Cargar Personas</button>
-                </div>
-                
-                <p class="help-text">Ingresa una persona por línea o selecciona una plataforma para cargar automáticamente</p>
-                <textarea 
-                    id="peopleList" 
-                    placeholder="Selecciona una plataforma arriba o ingresa personas manualmente...">Ignacio Pourteau 🌪️
-Tomás Murphy 🎸
-Emilia Fernández 🦄
-Santiago López 🚀
-Valentina García 🎨
-Mateo Rodríguez 🎭</textarea>
-            </section>
-
             <!-- Sección de configuración de consolas -->
             <section class="config-section">
-                <h2>🎮 Configuración</h2>
-                <div class="input-group">
-                    <label for="consoleCount">Número de consolas:</label>
-                    <input type="number" id="consoleCount" min="1" max="20" value="3">
+                <h2>🎮 Configuración de Consolas</h2>
+                <p class="help-text">Selecciona cuántas consolas de cada tipo necesitas para el playtest</p>
+                
+                <div class="consoles-grid" id="consolesGrid">
+                    <!-- Las consolas se cargarán aquí dinámicamente -->
+                </div>
+                
+                <div class="total-consoles">
+                    <span id="totalConsoles">Total: 0 consolas</span>
                 </div>
             </section>
 
@@ -59,9 +40,9 @@ Mateo Rodríguez 🎭</textarea>
 
             <!-- Sección de resultados -->
             <section class="results-section" id="resultsSection">
-                <h2>🏆 Asignación de Consolas</h2>
+                <h2>🏆 Asignación Final</h2>
                 <div id="results" class="results-container">
-                    <!-- Los resultados se mostrarán aquí -->
+                    <!-- Los resultados se mostrarán aquí ordenados por consola -->
                 </div>
             </section>
 
